@@ -1,7 +1,7 @@
 const express=require('express');
 const router=express.Router();
 const Blog=require('../models/Blog');
-
+const Author=require('../models/Author');
 
 
 router.get('/getAllBlogs',async (req,res)=>{
@@ -27,6 +27,8 @@ router.get('/:blogid',async (req,res)=>{
 router.post('/postBlog',async (req,res)=>{
     try{
         console.log(req.body);
+        const author=await Author.findById(req.body.authorId);
+        req.body.authorName=author.authorName;
         const newBlog=new Blog(req.body);
         newBlog.save();
         res.status(200).json({blogAdded:newBlog});
@@ -40,10 +42,14 @@ router.post('/postBlog',async (req,res)=>{
 router.put('/modifyBlog/:id?',async(req,res)=>{
     try{
         const id=req.params.id;
-        const authorName=req.query.authorName;
+        const authorId=req.query.authorId;
         let blog=await Blog.findById(id);
         
-        blog.authorName=authorName;
+        blog.authorId=authorId;
+        const author=await Author.findById(blog.authorId);
+console.log(author);
+
+        blog.authorName=author.authorName;
         await blog.save();
         res.status(200).json({updatedBlog:blog});
     }catch(err){
